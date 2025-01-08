@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Доступные задания</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<header>
+    <button onclick="logout()">Выйти</button>
+    <a href="/userplace/tasks"> Посмотреть задачи</a>
+    <a href="/userplace/available-tasks"> Посмотреть доступные задачи</a>
+    <a href="/userplace/profile"> Перейти в профиль</a>
+
+</header>
+<h1>Доступные задания</h1>
+<button onclick="loadTasks()">update tasks</button>
+<table border="1">
+    <thead>
+    <tr>
+        <th>Название</th>
+        <th>Описание</th>
+        <th>Цена</th>
+        <th>Создатель</th>
+        <th>Действие</th>
+    </tr>
+    </thead>
+    <tbody id="taskList">
+    </tbody>
+</table>
+
+<p id="message" style="color: green;"></p>
+<p id="error" style="color: red;"></p>
+
+<script>
+    window.onload = loadTasks();
+    async function loadTasks() {
+        $.ajax({
+            url: "/api/v1/tasks",
+            type: "GET",
+            success: async function (tasks) {
+                let taskList = $("#taskList");
+                taskList.empty();
+
+                for (const task of tasks) {
+                    if (!task.e_Worker) {
+                        const userId = await getByEmail(task.e_Boss);
+                        const row = `
+                            <tr>
+                                <td>${task.title}</td>
+                                <td>${task.description}</td>
+                                <td>${task.price}</td>
+                                <td>${task.e_Boss}
+                                <a href="/userplace/view-profile/${userId}">Посмотреть профиль</a>
+                                </td>
+
+
+
+                                <td>
+                                    <button onclick="takeTask(${task.id})">Взять задание</button>
+                                </td>
+                            </tr>
+                        `;
+                        taskList.append(row);
+                    }
+                }
+            },
+            error: function(error) {
+                $("#error").text("Ошибка загрузки заданий: " + error.responseText);
+            }
+        });
+    }
+
+    function takeTask(taskId) {
+        $.ajax({
+            url: `/api/v1/tasks/take/${taskId}`,
+            type: "PUT",
+            success: function(response) {
+                $("#message").text(response);
+                $("#error").text("");
+                loadTasks();
+            },
+            error: function(error) {
+                $("#message").text("");
+                $("#error").text("Ошибка при взятии задания: " + error.responseText);
+            }
+        });
+    }
+    async function getByEmail(email) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `/api/v1/users/viewEProfile/${email}`,
+                type: "GET",
+                success: function(response) {
+                    $("#message").text("");
+                    $("#error").text("");
+                    const userId = response;
+                    if (userId) {
+                        resolve(userId);
+                    } else {
+                        reject("ID пользователя не найден");
+                    }
+                },
+                error: function(error) {
+                    $("#message").text("");
+                    $("#error").text("Ошибка при поиске пользователя: " + error.responseText);
+                    reject(error.responseText);
+                }
+            });
+        });
+    }
+
+
+
+</script>
+</body>
+</html>
