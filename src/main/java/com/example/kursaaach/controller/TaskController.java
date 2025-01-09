@@ -95,7 +95,7 @@ public class TaskController {
         }
 
         Task existingTask = taskService.getTask(id);
-        if (existingTask == null || existingTask.getE_Worker() != null) {
+        if (existingTask == null) {
             return "Task not available or already taken.";
         }
 

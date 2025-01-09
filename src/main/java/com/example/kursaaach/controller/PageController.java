@@ -1,5 +1,7 @@
 package com.example.kursaaach.controller;
 
+import com.example.kursaaach.service.Session;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +35,11 @@ public class PageController {
         Long message = id;
         model.addAttribute("id", message);
         return "viewProfile";
+    }
+    @GetMapping("/adminPlace")
+    public String adminPlacePage() {
+
+        return "adminPage";
     }
 }
 

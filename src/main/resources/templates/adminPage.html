@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Список пользователей</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+
+<body>
+<header>
+    <button onclick="logout()">Выйти</button>
+    <a href="/userplace/tasks"> Посмотреть задачи</a>
+    <a href="/userplace/available-tasks"> Посмотреть доступные задачи</a>
+    <a href="/userplace/profile"> Перейти в профиль</a>
+
+</header>
+<h2>Все пользователи:</h2>
+<div id="userContainer"></div>
+
+<p id="message" style="color: green;"></p>
+<p id="error" style="color: red;"></p>
+
+</body>
+</html>
+<script>
+    window.onload = loadUsers();
+    function loadUsers() {
+        $.ajax({
+            url: "/api/v1/users",
+            type: "GET",
+            success: function(users) {
+                $("#userContainer").empty();
+                users.forEach(user => {
+                    const taskDiv = $("<div>").addClass("user");
+                    const taskInfo = `
+                            <p><strong>Имя:</strong> ${user.firstName} ${user.lastName}</p>
+                            <p><strong>Электронная почта:</strong> ${user.email}</p>
+                            <p><strong>Дата рождения:</strong> ${user.dateOfBirth}</p>
+                            <p><strong>Роль:</strong> ${user.role}</p>
+                             <p><button onclick="deleteUser(${user.id})">Удалить профиль пользователя</button></p>
+                        `;
+
+
+
+
+                    taskDiv.html(taskInfo);
+                    $("#userContainer").append(taskDiv);
+                });
+            },
+            error: function(error) {
+                $("#error").text("Ошибка загрузки задач: " + error.responseText);
+            }
+        });
+    }
+    function deleteUser(userId) {
+        $.ajax({
+            url: `/api/v1/users/delete/${userId}`,
+            type: "DELETE",
+            success: function(response) {
+                $("#message").text( response );
+                $("#error").text("");
+                loadUsers();
+            },
+            error: function(error) {
+                $("#message").text("");
+                $("#error").text("Ошибка при удалении пользователя: " + error.responseText);
+            }
+        });
+    }
+</script>

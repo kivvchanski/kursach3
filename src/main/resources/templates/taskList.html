@@ -33,7 +33,7 @@
 
 <script>
     window.onload = loadTasks();
-    async function loadTasks() {
+    function loadTasks() {
         $.ajax({
             url: "/api/v1/tasks",
             type: "GET",
@@ -46,7 +46,7 @@
                         const userId = await getByEmail(task.e_Boss);
                         const row = `
                             <tr>
-                                <td>${task.title}</td>
+                                <td>${task.title} ${task.id}</td>
                                 <td>${task.description}</td>
                                 <td>${task.price}</td>
                                 <td>${task.e_Boss}
@@ -70,13 +70,13 @@
         });
     }
 
-    function takeTask(taskId) {
+    async function takeTask(taskId) {
         $.ajax({
             url: `/api/v1/tasks/take/${taskId}`,
             type: "PUT",
             success: function(response) {
                 $("#message").text(response);
-                $("#error").text("");
+                $("#error").text("111");
                 loadTasks();
             },
             error: function(error) {
@@ -91,7 +91,6 @@
                 url: `/api/v1/users/viewEProfile/${email}`,
                 type: "GET",
                 success: function(response) {
-                    $("#message").text("");
                     $("#error").text("");
                     const userId = response;
                     if (userId) {

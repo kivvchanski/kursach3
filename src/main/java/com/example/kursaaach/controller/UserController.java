@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,8 +25,20 @@ public class UserController {
         return "User successfully saved";
     }
     @GetMapping()
-    public List<User> getUsers() {
+    public List<User> getUsers()  {
             List<User> allUsers = service.findAllUser();
+            for (User user : allUsers) {
+                if (user.getDateOfBirth() == null) {
+                    user.setDateOfBirth(LocalDate.now());
+                }
+                if (user.getFirstName() == null) {
+                    user.setFirstName("Unknown FirstName");
+                }
+                if (user.getLastName() == null) {
+                    user.setLastName("Unknown LastName");
+                }
+
+            }
             return allUsers;
     }
 
@@ -45,6 +59,9 @@ public class UserController {
         User user = service.findByEmail(username);
         if (user == null) {
             throw new IllegalStateException("User not found.");
+        }
+        if (user.getDateOfBirth() == null) {
+            user.setDateOfBirth(LocalDate.now());
         }
 
         return user;
@@ -77,5 +94,23 @@ public class UserController {
     public String logout(HttpSession httpSession) {
         httpSession.invalidate();
         return "User logged out.";
+    }
+    @DeleteMapping("/delete/{id}")
+    public String deleteUser(@PathVariable Long id, HttpSession httpSession) {
+        User user = service.findByID(id);
+        Session session = (Session) httpSession.getAttribute("session");
+        if (session == null || !session.isAuthenticated()) {
+            throw new IllegalStateException("No active session or user not authenticated.");
+        }
+        User admin = service.findByEmail(session.getUsername());
+        if (admin.getRole().equals("USER")) {
+            return "You don't have permission to delete user.";
+        }
+        if (user == null) {
+            return "User not found.";
+        } else {
+            service.deleteUser(user.getEmail());
+            return "User successfully deleted";
+        }
     }
 }
