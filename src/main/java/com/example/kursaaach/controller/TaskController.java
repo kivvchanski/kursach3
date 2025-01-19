@@ -68,7 +68,6 @@ public class TaskController {
         taskService.updateTask(task);
         return "Task successfully updated.";
     }
-
     @DeleteMapping("/{id}")
     public String deleteTask(@PathVariable Long id) {
         Task existingTask = taskService.getTask(id);
@@ -78,14 +77,12 @@ public class TaskController {
         taskService.deleteTask(id);
         return "Task successfully deleted.";
     }
-
     @GetMapping("/available")
     public List<Task> getAvailableTasks() {
         return taskService.getTasks().stream()
                 .filter(task -> task.getE_Worker() == null)
                 .toList();
     }
-
     @PutMapping("/take/{id}")
     public String takeTask(@PathVariable Long id, HttpSession session) {
         Session userSession = (Session) session.getAttribute("session");
